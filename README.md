@@ -6,4 +6,6 @@ I'm **vt2353** on the leaderboard.
 
 Rank 1/167 
 
-![alt text](https://github.com/vishweshwartyagi/COMS4771-Spring-2022-Regression-Competition/blob/main/leaderboard/standings.png)
+<p align="center">
+  <img src="leaderboard/standings.pn" width="350" title="hover text">
+</p>
