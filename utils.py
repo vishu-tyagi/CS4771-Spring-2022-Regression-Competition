@@ -1,7 +1,6 @@
 import os
 from pathlib import Path
 
-
 os.chdir('/content/drive/MyDrive/COMS4771')
 DATA_PATH = Path.cwd() / 'data'
 RAW = DATA_PATH / 'raw'
