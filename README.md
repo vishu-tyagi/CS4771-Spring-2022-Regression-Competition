@@ -7,5 +7,5 @@ I'm **vt2353** on the leaderboard.
 Rank 1/167 
 
 <p align="center">
-  <img src="/leaderboard/standings.pn" width="350" title="hover text">
+  <img src="/leaderboard/standings.png" width="350" title="hover text">
 </p>
