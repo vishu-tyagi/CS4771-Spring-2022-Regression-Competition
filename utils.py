@@ -28,7 +28,6 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 from models import *
 
 
-
 class BasicDataset(TensorDataset):
     def __init__(self, data, target):
         self.x = data
@@ -54,6 +53,7 @@ def preprocess(data=None):
 def load_data(preprocess_flag=True):
 
     xdev = pd.read_csv(RAW / 'train_examples.csv')
+
     if preprocess_flag:
         xdev = preprocess(xdev)
 
@@ -61,6 +61,7 @@ def load_data(preprocess_flag=True):
     ydev = np.array(ydev.duration.values).astype(np.float32)
 
     xtest = pd.read_csv(RAW / 'test_examples.csv')
+
     if preprocess_flag:
         xtest = preprocess(xtest)
 
@@ -110,6 +111,7 @@ def make_data_loader(xtrain=None, ytrain=None, xval=None, yval=None, batch_size=
 
 
 def build_model(input_size=None, output_size=1):
+    
     # model instance
     model = MLPModel(name='mlp', input_size=input_size, output_size=1)
 
@@ -177,6 +179,7 @@ def train(model=None, train_loader=None, valid_loader=None, learning_rate=0.001,
 
 
 def predict(model=None, xtest=None, valid_loss=None, file_name=None):
+    
     best_epoch = np.argmin(valid_loss) + 1 
     print(f'Best epoch is epoch: {best_epoch}')
 
@@ -196,6 +199,7 @@ def predict(model=None, xtest=None, valid_loss=None, file_name=None):
 
 
 def ensemble(files=None, test_size=None, file_name=None):
+    
     N = len(files)
     nu = np.array([0 for _ in range(test_size)]).astype(np.float32)
 

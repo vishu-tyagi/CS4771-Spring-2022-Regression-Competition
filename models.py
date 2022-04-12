@@ -2,10 +2,10 @@ import torch
 import torch.nn as nn
 
 
-
 class MLPModel(nn.Module):
-    '''Reshape -> FC -> Sigmoid -> FC -> Sigmoid -> FC'''
+
     def __init__(self, name, input_size, output_size):
+
         self.input_size = input_size
         self.output_size = output_size
         self.name = name
@@ -23,6 +23,7 @@ class MLPModel(nn.Module):
         self.dropout = nn.Dropout(.2)
 
     def forward(self, x):
+        
         '''model architecture'''
         out = self.l1(x)
         out = self.relu(out)
@@ -45,6 +46,7 @@ class MLPModel(nn.Module):
         out = self.dropout(out)
 
         out = self.l6(out)
+
         return out
 
 
