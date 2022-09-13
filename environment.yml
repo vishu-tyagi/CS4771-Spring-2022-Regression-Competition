@@ -5,6 +5,10 @@ dependencies:
   - python=3.9
   - pandas
   - scikit-learn
+  - pytorch
+  - torchvision
+  - torchaudio
+  - cudatoolkit=11.3
   # Interactive
   - ipykernel
   - matplotlib
