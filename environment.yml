@@ -1,0 +1,18 @@
+name: dnn
+channels:
+  - conda-forge
+dependencies:
+  - python=3.9
+  - pandas
+  - scikit-learn
+  # Interactive
+  - ipykernel
+  - matplotlib
+  - seaborn
+  # Testing
+  - pycodestyle
+  - pytest
+  - pytest-cov
+  - pytest-pycodestyle
+  # Pip
+  - pip
