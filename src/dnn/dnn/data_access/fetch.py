@@ -28,8 +28,6 @@ class DataClass():
         self.reports_path = Path(os.path.join(self.current_path, config.REPORTS_DIR))
 
         self.zip_file_path = Path(os.path.join(self.raw_path, config.ZIP_FILE_NAME))
-        self.zip_folder_path = Path(os.path.join(self.raw_path, config.ZIP_FOLDER))
-
         self.data_file_path = Path(os.path.join(self.data_path, CSV_NAME))
 
     def make_dirs(self):
@@ -48,13 +46,13 @@ class DataClass():
 
         logger.info("Reading raw data into CSV for pre-processing")
         train_examples = pd.read_csv(
-            os.path.join(self.zip_folder_path, self.config.ZIP_RELEVANT_FILES["train_examples"])
+            os.path.join(self.raw_path, self.config.ZIP_RELEVANT_FILES["train_examples"])
         )
         train_labels = pd.read_csv(
-            os.path.join(self.zip_folder_path, self.config.ZIP_RELEVANT_FILES["train_labels"])
+            os.path.join(self.raw_path, self.config.ZIP_RELEVANT_FILES["train_labels"])
         )
         test_examples = pd.read_csv(
-            os.path.join(self.zip_folder_path, self.config.ZIP_RELEVANT_FILES["test_examples"])
+            os.path.join(self.raw_path, self.config.ZIP_RELEVANT_FILES["test_examples"])
         )
         train_examples[SPLIT] = TRAIN
         train_examples[TARGET] = train_labels[TARGET]
