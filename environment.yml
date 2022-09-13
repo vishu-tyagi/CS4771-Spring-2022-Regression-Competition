@@ -1,6 +1,7 @@
 name: dnn
 channels:
   - conda-forge
+  - pytorch
 dependencies:
   - python=3.9
   - pandas
