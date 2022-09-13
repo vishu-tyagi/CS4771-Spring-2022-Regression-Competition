@@ -7,11 +7,14 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from scipy.special import expit
-from sklearn.model_selection import train_test_split
+import torch
+import torch.nn as nn
+from torch.utils.data import DataLoader
 
 from dnn.config import DNNConfig
+from dnn.data_access import BasicDataset
 from dnn.model.mlp import MLPModel
+
 from sentiment_analysis.utils import timing
 from sentiment_analysis.utils.constants import (
     TEXT,
@@ -34,7 +37,18 @@ class Model():
         self.model_path = Path(os.path.join(self.current_path, config.MODEL_DIR))
         self.reports_path = Path(os.path.join(self.current_path, config.REPORTS_DIR))
 
+        self.num_features = None
+        self.num_train_samples = None
+        self.num_val_samples = None
+
         self._model = None
+        self.device = None
+        self.batch_size = None
+        self.learning_rate = None
+        self.epochs = None
+        self.num_wokers = None
+        self.criterion = None
+        self.optimizer = None
         # self.model_name = config.MODEL_NAME
         # self.params = None
         # self.params_name = config.MODEL_PARAMETERS_NAME
@@ -44,13 +58,15 @@ class Model():
         # self.custom_metric = None
 
     def _get_params(self):
-        self.params = dict()
-        self.params["num_boost_round"] = self.config.MODEL_NUM_BOOST_ROUND
-        self.params["early_stopping_rounds"] = self.config.MODEL_EARLY_STOPPING_ROUNDS
-        self.params["params"] = self.config.MODEL_PARAMETERS
-        self.params["features"] = []
-        self.obj = self.custom_evaluation.binary_logistic
-        self.custom_metric = self.custom_evaluation.fbeta_eval
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.batch_size = self.config.TRAIN_BATCH_SIZE
+        self.learning_rate = self.config.TRAIN_LEARNING_RATE
+        self.epochs = self.config.TRAIN_EPOCHS
+        self.num_wokers = self.config.TRAIN_NUM_WORKERS
+        self.criterion = self.config.TRAIN_CRITERION
+        self.optimizer = torch.optim.Adam(
+            self._model.parameters(), lr=self.learning_rate
+        )
         return self
 
     @timing
@@ -83,13 +99,12 @@ class Model():
 
     def build(self, df: pd.DataFrame):
         X_train = df[df[SPLIT].isin([TRAIN])]
-        Y_train = X_train[TARGET].values
-        X_train = X_train.drop(columns=[TARGET]).copy()
-        
+        Y_train = X_train[TARGET].values.reshape(-1,)
+        X_train = X_train.drop(columns=[SPLIT, TARGET])
 
         X_val = df[df[SPLIT].isin([VAL])]
-        Y_val = X_val[TARGET].values
-        X_val = X_val.drop(columns=[TEXT, TARGET, SPLIT]).copy()
+        Y_val = X_val[TARGET].values.reshape(-1,)
+        X_val = X_val.drop(columns=[SPLIT, TARGET])
 
         logger.info("Training model")
         self.train(X_train, Y_train, X_val, Y_val)
@@ -134,69 +149,97 @@ class Model():
         X_val: Optional[pd.DataFrame] = None,
         Y_val: Optional[pd.DataFrame] = None
     ):
+        self._model = MLPModel(X_train.shape[1], 1, self.config)
         self._get_params()
-        self.params["features"] = X_train.columns.tolist()
 
-        logger.info(f"Number of features: {X_train.shape[1]}")
-        logger.info(f"Number of training samples: {X_train.shape[0]}")
-        pos_prob = sum(Y_train) / len(Y_train)
-        logger.info(f"Training set label distribution: \
-            pos:{pos_prob:0.2f}, neg:{1-pos_prob:0.2f}")
+        self.num_features = X_train.shape[1]
+        self.num_train_samples = X_train.shape[0]
+        self.num_val_samples = X_val.shape[0]
+        logger.info(f"Number of features: {self.num_features}")
+        logger.info(f"Number of training samples: {self.num_train_samples}")
+        logger.info(f"Number of validation samples: {self.num_val_samples}")
 
-        d_train = xgb.DMatrix(X_train, Y_train)
+        X_train = X_train.to_numpy().astype(np.float32)
+        X_train = torch.from_numpy(X_train)
+        Y_train = Y_train.reshape(-1,).astype(np.float32)
+        Y_train = torch.from_numpy(Y_train)
 
-        if X_val is not None:
-            logger.info("Running validation...")
-            logger.info(f"Number of validation samples: {X_val.shape[0]}")
-            pos_prob = sum(Y_val) / len(Y_val)
-            logger.info(f"Validation set label distribution: \
-                pos:{pos_prob:0.2f}, neg:{1-pos_prob:0.2f}")
+        X_val = X_val.to_numpy().astype(np.float32)
+        X_val = torch.from_numpy(X_val)
+        Y_val = Y_val.reshape(-1,).astype(np.float32)
+        Y_val = torch.from_numpy(Y_val)
 
-            d_val = xgb.DMatrix(X_val, Y_val)
-            evals = [(d_train, 'train'), (d_val, 'validation')]
-
-            self._model = xgb.train(
-                params=self.params["params"],
-                dtrain=d_train,
-                num_boost_round=self.params["num_boost_round"],
-                evals=evals,
-                obj=self.obj,
-                custom_metric=self.custom_metric,
-                maximize=True,
-                early_stopping_rounds=self.params["early_stopping_rounds"],
-                verbose_eval=10
-            )
-            num_boost_rounds = self._model.best_iteration
-            self.params["num_boost_round"] = num_boost_rounds
-            logger.info(f"Learnt num_boost_round after validation:\
-                {self.params['num_boost_round']}")
-
-            del d_train, d_val, evals, self._model
-            gc.collect()
-
-            X_train = pd.concat([X_train, X_val], ignore_index=True)
-            Y_train = np.concatenate([Y_train, Y_val])
-
-            d_train = xgb.DMatrix(X_train, Y_train)
-            logger.info("Now training on development (train+val) set...")
-
-        evals = [(d_train, 'train')]
-
-        self._model = xgb.train(
-            params=self.params["params"],
-            dtrain=d_train,
-            num_boost_round=self.params["num_boost_round"],
-            evals=evals,
-            obj=self.obj,
-            custom_metric=self.custom_metric,
-            maximize=True,
-            verbose_eval=10
+        train = BasicDataset(X_train, Y_train)
+        train_loader = DataLoader(
+            dataset=train,
+            batch_size=self.batch_size,
+            shuffle=True,
+            num_workers=self.num_workers
+        )
+        val = BasicDataset(X_val, Y_val)
+        val_loader = DataLoader(
+            dataset=val,
+            batch_size=self.batch_size,
+            shuffle=False,
+            num_workers=self.num_workers
         )
 
-        del X_train, Y_train, X_val, Y_val, d_train, evals
+        del X_train, Y_train, X_val, Y_val, train, val
         gc.collect()
 
+        val_loss = self._train(train_loader, val_loader)
+        
         return self
+
+    def _train(self, train_loader, val_loader):
+        min_val_loss = np.Inf
+        train_loss, val_loss = [], []
+
+        for epoch in range(self.epochs):
+            self._model.train()
+            train_batch_loss = []
+            for i, (x, y) in enumerate(train_loader):
+                x = x.to(self.device)
+                y = y.to(self.device)
+
+                outputs = self._model(x).reshape(-1,)
+                loss = self.criterion(outputs, y)
+
+                self.optimizer.zero_grad()
+                loss.backward()
+                self.optimizer.step()
+
+                train_batch_loss.append(loss.item())
+                logger.info(
+                    f"EPOCH:{epoch+1}/{self.epochs}, step:{i+1}/{self.num_train_samples//self.batch_size}, loss={loss.item():.4f}", end="\r"
+                )
+            train_loss.append(np.array(train_batch_loss).mean())
+
+            self._model.eval()
+            val_batch_loss = []
+
+            with torch.no_grad():
+                for i, (x, y) in enumerate(val_loader):
+                    x = x.to(self.device)
+                    y = y.to(self.device)
+
+                    outputs = self._model(x).reshape(-1,)
+                    loss = self.criterion(outputs, y)
+
+                    val_batch_loss.append(loss.item())
+                    logger.info(
+                        f"EPOCH:{epoch+1}/{self.epochs}, step:{i+1}/{self.num_train_samples//self.batch_size}, loss={loss.item():.4f}", end="\r"
+                    )
+            val_loss.append(np.array(val_batch_loss).mean())
+            logger.info(
+                f"EPOCH:{epoch+1}/{self.epochs} - Training Loss: {train_loss[-1]}, Validation Loss: {val_loss[-1]}"
+            )
+
+            model_state = f"{self._model.name}_epoch_{epoch+1:03}.pth"
+            model_state_path = os.path.join(self.path.join(self.model_path, model_state))
+            torch.save(self._model.state_dict(), model_state_path)
+
+        return val_loss
 
     def _predict_prob(self, df: pd.DataFrame):
         features = self.params["features"]

@@ -46,4 +46,13 @@ class DNNConfig():
     ]
     NOMINAL_HANDLE_UNKNOWN = "ignore"
 
+    MODEL_NAME = "mlp"
+    MODEL_HIDDEN_DIMENSIONS = [784, 624, 312, 156, 78]
+    MODEL_DROPOUT_SIZE = .2
+
+    TRAIN_BATCH_SIZE = 
+    TRAIN_LEARNING_RATE = 
+    TRAIN_EPOCHS = 
+    TRAIN_NUM_WORKERS = 
+    TRAIN_CRITERION = 
     

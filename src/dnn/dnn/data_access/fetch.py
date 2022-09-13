@@ -77,3 +77,17 @@ class DataClass():
         del train_examples, val_examples, test_examples, train_labels
         gc.collect()
         return df
+
+
+class BasicDataset(TensorDataset):
+    def __init__(self, data, target):
+        self.x = data
+        self.y = target
+        self.n_samples = self.x.shape[0]
+
+    def __getitem__(self, idx):
+        return self.x[idx], self.y[idx]
+
+    def __len__(self):
+        return self.n_samples
+

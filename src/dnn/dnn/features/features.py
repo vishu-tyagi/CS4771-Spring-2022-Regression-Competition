@@ -8,6 +8,7 @@ from urllib.request import ProxyDigestAuthHandler
 
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
+from torch.utils.data import TensorDataset
 
 from dnn.config import DNNConfig
 from dnn.features.helpers import processor_init
@@ -38,11 +39,14 @@ class Features(BaseEstimator, TransformerMixin):
         logger.info("Fitting processor on train set")
         train = df[df[SPLIT].isin([TRAIN])]
         self.fit(train)
+
         logger.info("Transforming data")
         Y = df[[SPLIT, TARGET]]
         X = self.transform(df)
         df = pd.concat([X, Y], axis=1).copy()
 
+        del X, Y, train
+        gc.collect()
         return df
 
     @timing

@@ -1,1 +1,1 @@
-from .fetch import DataClass
+from .fetch import DataClass, BasicDataset
