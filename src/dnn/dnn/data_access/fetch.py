@@ -34,7 +34,7 @@ class DataClass():
         self.data_file_path = Path(os.path.join(self.data_path, DATA_CSV))
 
     def make_dirs(self):
-        dirs = [self.model_path, self.reports_path]
+        dirs = [self.model_path, self.trained_models_path, self.reports_path]
         for dir in dirs:
             dir.mkdir(parents=True, exist_ok=True)
 
