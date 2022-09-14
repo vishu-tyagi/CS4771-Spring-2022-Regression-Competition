@@ -5,10 +5,13 @@ Comptetition link - https://www.kaggle.com/competitions/coms4771-spring-2022-reg
 | Username  | vt2353    |
 | :---:     | :---:     |
 | Rank      | 1/167     |
+| :---:     | :---:     |
 
 <p align="center">
   <img src="/reports/standings.png" width="600" height="200" title="Standings">
 </p>
+
+##
 
 Large-scale regressor for predicting trip duration for an Uber-esque transportation service.
 
