@@ -7,5 +7,5 @@ Comptetition link - https://www.kaggle.com/competitions/coms4771-spring-2022-reg
 **Rank**: 1/167
 
 <p align="center">
-  <img src="/reports/standings.png" width="500" height="200" title="Standings">
+  <img src="/reports/standings.png" width="600" height="200" title="Standings">
 </p>
