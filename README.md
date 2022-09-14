@@ -3,9 +3,7 @@
 Comptetition link - https://www.kaggle.com/competitions/coms4771-spring-2022-regression-competition/leaderboard
 
 | Username  | vt2353    |
-| :---:     | :---:     |
 | Rank      | 1/167     |
-| :---:     | :---:     |
 
 <p align="center">
   <img src="/reports/standings.png" width="600" height="200" title="Standings">
