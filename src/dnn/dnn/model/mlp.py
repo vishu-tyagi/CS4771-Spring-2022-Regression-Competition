@@ -1,30 +1,26 @@
-import torch.nn as nn
+from typing import Any
 
-from dnn.config import DNNConfig
+import torch.nn as nn
 
 
 class MLPModel(nn.Module):
     def __init__(
         self,
-        input_dim: int,
-        output_dim: int,
-        config: DNNConfig
+        dimensions: list[int],
+        dropout: int,
+        **kw: dict[str, Any]
     ):
         super(MLPModel, self).__init__()
-        self.name = config.MODEL_NAME
-        self.input_dim = input_dim
-        self.output_dim = config.output_dim
-        self.hidden_dims = config.MODEL_HIDDEN_DIMENSIONS
-        self.layers = nn.ModuleList()
-
-        # Model layers
-        self.layers_init()
-        # Activation
+        self.input_dim = dimensions[0]
+        self.output_dim = dimensions[-1]
+        self.hidden_dims = dimensions[1:-1]
+        self.layers = None
         self.relu = nn.ReLU()
-        # Dropout
-        self.dropout = nn.Dropout(config.MODEL_DROPOUT_SIZE)
+        self.dropout = nn.Dropout(dropout)
+        self.layers_init()
 
     def layers_init(self):
+        self.layers = nn.ModuleList()
         current_dim = self.input_dim
         for hdim in self.hidden_dims:
             self.layers.append(nn.Linear(current_dim, hdim))

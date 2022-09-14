@@ -6,12 +6,14 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
+from torch.utils.data import TensorDataset
 
 from dnn.config import DNNConfig
 from dnn.data_access.helpers import unzip
 from dnn.utils import timing
+from dnn.utils.constants import TRAINED_DIR
 from dnn.utils.constants import (
-    ID, TARGET, SPLIT, TRAIN, VAL, HOLDOUT, TEST, RAW_DIR, CSV_NAME
+    ID, TARGET, SPLIT, TRAIN, VAL, TEST, RAW_DIR, DATA_CSV
 )
 
 logger = logging.getLogger(__name__)
@@ -25,10 +27,11 @@ class DataClass():
         self.data_path = Path(os.path.join(self.current_path, config.DATA_DIR))
         self.raw_path = Path(os.path.join(self.data_path, RAW_DIR))
         self.model_path = Path(os.path.join(self.current_path, config.MODEL_DIR))
+        self.trained_models_path = Path(os.path.join(self.model_path, TRAINED_DIR))
         self.reports_path = Path(os.path.join(self.current_path, config.REPORTS_DIR))
 
         self.zip_file_path = Path(os.path.join(self.raw_path, config.ZIP_FILE_NAME))
-        self.data_file_path = Path(os.path.join(self.data_path, CSV_NAME))
+        self.data_file_path = Path(os.path.join(self.data_path, DATA_CSV))
 
     def make_dirs(self):
         dirs = [self.model_path, self.reports_path]

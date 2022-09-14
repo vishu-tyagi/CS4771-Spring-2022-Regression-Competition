@@ -16,14 +16,12 @@ HOUR = "hour"
 DAY = "data"
 MONTH = "month"
 
-
-RAW_DIR = 'raw'
-TAR_FOLDER = 'aclImdb'
+RAW_DIR = "raw"
+TRAINED_DIR = "trained-models"
 
 TRAIN = 'train'
 VAL = 'val'
-HOLDOUT = 'holdout'
 TEST = 'test'
 
-CSV_NAME = "data.csv"
-CSV_SEP = "~"
+DATA_CSV = "data.csv"
+SUBMISSION_CSV = "submission.csv"
