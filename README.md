@@ -14,7 +14,7 @@ Comptetition link - https://www.kaggle.com/competitions/coms4771-spring-2022-reg
 
 Large-scale regressor for predicting trip duration for an Uber-esque transportation service.
 
-It uses a deep neural network to regress upon features obtained from raw data as a result of feature-selection for predicting trip duration in seconds.
+It uses a deep neural network to regress upon features obtained post feature-selection for predicting trip duration in seconds.
 
 The neural network minimizes L1 loss and uses Adam optimizer.
 
