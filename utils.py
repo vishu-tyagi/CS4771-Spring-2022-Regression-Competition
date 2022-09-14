@@ -1,6 +1,12 @@
 import os
 from pathlib import Path
 
+os.chdir('/content/drive/MyDrive/COMS4771')
+DATA_PATH = Path.cwd() / 'data'
+RAW = DATA_PATH / 'raw'
+PROCESSED = DATA_PATH / 'processed'
+SUBMISSION = DATA_PATH / 'submission'
+
 import numpy as np
 import pandas as pd
 
@@ -105,6 +111,7 @@ def make_data_loader(xtrain=None, ytrain=None, xval=None, yval=None, batch_size=
 
 
 def build_model(input_size=None, output_size=1):
+    
     # model instance
     model = MLPModel(name='mlp', input_size=input_size, output_size=1)
 
