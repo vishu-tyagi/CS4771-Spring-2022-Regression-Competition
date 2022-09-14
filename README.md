@@ -6,5 +6,5 @@ User Name: **vt2353**
 Rank 1/167
 
 <p align="center">
-  <img src="/reports/standings.png" width="300" height="200" title="Standings">
+  <img src="/reports/standings.png" width="500" height="300" title="Standings">
 </p>
