@@ -6,6 +6,16 @@ Comptetition link - https://www.kaggle.com/competitions/coms4771-spring-2022-reg
 
 **Rank**: 1/167
 
+The competition uses a private dataset.
+
 <p align="center">
   <img src="/reports/standings.png" width="600" height="200" title="Standings">
 </p>
+
+Large-scale regressor for predicting trip duration for an Uber-esque transportation service.
+
+It uses a deep neural network to regress upon features obtained from raw data as a result of feature-selection for predicting trip duration in seconds.
+
+The neural network minimizes L1 loss and uses Adam optimizer.
+
+The training phase includes validating the model to find the best epoch based on validation loss.
