@@ -91,10 +91,10 @@ class Model():
     def _plot_loss_curve(self):
         fig = plt.figure(figsize=(8, 6))
         epochs = [i+1 for i in range(self.epochs)]
-        plt.plot(epochs, self.train_loss, label="Train Loss", color="blue")
-        plt.plot(epochs, self.val_loss, label="Validation Loss", color="orange")
+        plt.plot(epochs, self.train_loss, label="Train Loss", color="orange")
+        plt.plot(epochs, self.val_loss, label="Validation Loss", color="blue")
         best_epoch = np.argmin(self.val_loss) + 1
-        plt.axvline(x=best_epoch, label="Best Epoch", color="red")
+        plt.axvline(x=best_epoch, label="Best Epoch", color="darkgreen")
         plt.xlabel("Epoch")
         plt.ylabel("Loss (L1)")
         plt.title(f"Best Epoch: {best_epoch}")

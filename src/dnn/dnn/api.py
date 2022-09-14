@@ -21,7 +21,7 @@ def train(config: DNNConfig = DNNConfig) -> None:
     # Preprocess and build features
     features = Features(config)
     df_features = features.build()
-    # Train model
+    # Train model and generate submission file
     model = Model(config)
     model.build()
 
