@@ -2,9 +2,9 @@
 *.egg-info
 .coverage
 data/raw/*.csv
-data/*.csv
+/data/*.csv
 **/__pycache__
 **/*.pyc
-/reports/
+/reports/*.csv
 /model/
 out/

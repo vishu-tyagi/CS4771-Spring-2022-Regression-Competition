@@ -1,5 +1,6 @@
 import os
 import gc
+import sys
 import json
 import logging
 from typing import Optional
@@ -7,6 +8,9 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+sns.set_theme(style="darkgrid")
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
@@ -15,7 +19,7 @@ from dnn.config import DNNConfig
 from dnn.data_access import BasicDataset
 from dnn.model.mlp import MLPModel
 from dnn.utils import timing
-from dnn.utils.constants import (TRAINED_DIR, SUBMISSION_CSV)
+from dnn.utils.constants import (TRAINED_DIR, SUBMISSION_CSV, LOSS_CURVE)
 from dnn.utils.constants import (
     ID, TARGET, SPLIT, TRAIN, VAL, TEST
 )
@@ -60,20 +64,43 @@ class Model():
         self.num_workers = self.config.TRAIN_NUM_WORKERS
         return self
 
-    def _make_data_loader(self, X: pd.DataFrame, Y: np.ndarray):
+    def _make_data_loader(
+        self,
+        X: pd.DataFrame,
+        Y: np.ndarray,
+        context: Optional[str] = None,
+        shuffle: Optional[bool] = True
+    ):
         X = X.to_numpy().astype(np.float32)
         X = torch.from_numpy(X)
         Y = Y.reshape(-1,).astype(np.float32)
         Y = torch.from_numpy(Y)
 
-        X = BasicDataset(X, Y)
-        X = DataLoader(
-            dataset=X,
+        if context == "validation":
+            shuffle = False
+
+        data = BasicDataset(X, Y)
+        data_loader = DataLoader(
+            dataset=data,
             batch_size=self.batch_size,
-            shuffle=True,
+            shuffle=shuffle,
             num_workers=self.num_workers
         )
-        return X
+        return data_loader
+
+    def _plot_loss_curve(self):
+        fig = plt.figure(figsize=(8, 6))
+        epochs = [i+1 for i in range(self.epochs)]
+        plt.plot(epochs, self.train_loss, label="Train Loss", color="blue")
+        plt.plot(epochs, self.val_loss, label="Validation Loss", color="orange")
+        best_epoch = np.argmin(self.val_loss) + 1
+        plt.axvline(x=best_epoch, label="Best Epoch", color="red")
+        plt.xlabel("Epoch")
+        plt.ylabel("Loss (L1)")
+        plt.title(f"Best Epoch: {best_epoch}")
+        plt.legend(loc="upper right")
+        fig.savefig(os.path.join(self.reports_path, LOSS_CURVE))
+        plt.close()
 
     @timing
     def save(self):
@@ -85,8 +112,6 @@ class Model():
         logger.info(f"Saving model parameters to {params_file_path}")
         with open(params_file_path, "w") as f:
             json.dump(self.params, f)
-
-        return self
 
     @timing
     def load(self):
@@ -100,8 +125,7 @@ class Model():
         logger.info(f"Loading model from {state_dict_path}")
         self._model.load_state_dict(torch.load(state_dict_path))
 
-        return self
-
+    @timing
     def build(self, df: pd.DataFrame):
         X_train = df[df[SPLIT].isin([TRAIN])]
         Y_train = X_train[TARGET].values
@@ -113,6 +137,7 @@ class Model():
 
         logger.info("Training model")
         self.train(X_train, Y_train, X_val, Y_val)
+        # return
 
         logger.info(f"Predicting on test set")
         X = df[df[SPLIT].isin([TEST])]
@@ -126,8 +151,7 @@ class Model():
         })
         submission_path = os.path.join(self.reports_path, SUBMISSION_CSV)
         submission.to_csv(submission_path, index=False)
-        print(f"Submission file saved to {submission_path}")
-        return self
+        logger.info(f"Submission file saved to {submission_path}")
 
     @timing
     def train(
@@ -145,6 +169,8 @@ class Model():
         self.params["features"] = X_train.columns.tolist()
 
         self._model = MLPModel(**self.params)
+        # self._model = MLPModel("mlp", X_train.shape[1], 1)
+        # return
         self._train_init()
         self.criterion = nn.L1Loss(reduction="mean")
         self.optimizer = torch.optim.Adam(self._model.parameters(), lr=self.learning_rate)
@@ -157,7 +183,8 @@ class Model():
         logger.info(f"Number of validation samples: {self.num_val_samples}")
 
         train_loader = self._make_data_loader(X_train, Y_train)
-        val_loader = self._make_data_loader(X_val, Y_val)
+        val_loader = self._make_data_loader(X_val, Y_val, context="validation")
+
         del X_train, Y_train, X_val, Y_val
         gc.collect()
 
@@ -168,12 +195,12 @@ class Model():
         # Move model to device
         self._model.to(self.device)
         # Two lists to keep the losses at the end of each epoch
-        train_loss, val_loss = [], []
+        train_loss, val_loss = list(), list()
         for epoch in range(self.epochs):
             self._model.train()
             # Dummy lists to keep the losses at the end of each iteration
             # (one batch forward and backward process)
-            train_batch_loss, val_batch_loss = [], []
+            train_batch_loss, val_batch_loss = list(), list()
             # Train model
             self._model.train()
             for i, (x, y) in enumerate(train_loader):
@@ -192,7 +219,8 @@ class Model():
                 self.optimizer.step()
                 train_batch_loss.append(loss.item())
                 print(
-                    f"EPOCH:{epoch+1}/{self.epochs}, step:{i+1}/{self.num_train_samples//self.batch_size}, loss={loss.item():.4f}", end="\r"
+                    f"EPOCH:{epoch+1}/{self.epochs}, step:{i+1}/{self.num_train_samples//self.batch_size}, loss={loss.item():.4f}", end="\r",
+                    file=sys.stderr
                 )
             # Take the average of iteration losses and append it
             # to the epoch losses list
@@ -210,21 +238,24 @@ class Model():
                     loss = self.criterion(outputs, y)
                     val_batch_loss.append(loss.item())
                     print(
-                        f"EPOCH:{epoch+1}/{self.epochs}, step:{i+1}/{self.num_train_samples//self.batch_size}, loss={loss.item():.4f}", end="\r"
+                        f"EPOCH:{epoch+1}/{self.epochs}, step:{i+1}/{self.num_train_samples//self.batch_size}, loss={loss.item():.4f}", end="\r",
+                        file=sys.stderr
                     )
             # Take the average of iteration losses and append it
             # to the epoch losses list
             val_loss.append(np.array(val_batch_loss).mean())
+            print(
+                f"EPOCH:{epoch+1}/{self.epochs} - Training Loss: {train_loss[-1]:.4f}, Validation Loss: {val_loss[-1]:.4f}",
+                file=sys.stderr
+            )
             # Save model
             state = f"epoch_{epoch+1:03}.pth"
             state_dict_path = os.path.join(self.trained_models_path, state)
             torch.save(self._model.state_dict(), state_dict_path)
-            print(
-                f"EPOCH:{epoch+1}/{self.epochs} - Training Loss: {train_loss[-1]:.4f}, Validation Loss: {val_loss[-1]:.4f}"
-            )
         # Save losses for plotting train-val curve
         self.train_loss = train_loss
-        self.val_loss = self.val_loss
+        self.val_loss = val_loss
+        self._plot_loss_curve()
         # Load the best model based on validation loss
         best_epoch = np.argmin(self.val_loss) + 1
         logger.info(f"Best epoch: {best_epoch}")
@@ -236,6 +267,7 @@ class Model():
         self._model.eval()
         return self
 
+    @timing
     def predict(self, X: pd.DataFrame):
         features = self.params["features"]
         missing_features = set(features) - set(X.columns.tolist())
@@ -245,10 +277,10 @@ class Model():
         X = X[features].copy()
         X = X.to_numpy().astype(np.float32)
         X = torch.from_numpy(X)
-        X.to(self.device)
 
         self._model.to(self.device)
         self._model.eval()
         with torch.no_grad():
-            pred = self._model(X).to("cpu").numpy().reshape(-1,)
+            pred = self._model(X.to(self.device))
+        pred = pred.to("cpu").numpy().reshape(-1,)
         return pred

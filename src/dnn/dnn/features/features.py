@@ -26,15 +26,26 @@ class Features(BaseEstimator, TransformerMixin):
         self.current_path = Path(os.getcwd()) if not config.CURRENT_PATH else config.CURRENT_PATH
         self.model_path = Path(os.path.join(self.current_path, config.MODEL_DIR))
 
-        self.processor = processor_init(config)
-        self.processor_path = os.path.join(self.model_path, config.PROCESSOR_FILE_NAME)
+        self.processor = None
+        self.processor_name = config.PROCESSOR_FILE_NAME
+
+    def save(self):
+        processor_path = os.path.join(self.model_path, self.processor_name)
+        logger.info(f"Saving processor to {processor_path}")
+        pickle.dump(self.processor, open(processor_path, "wb"))
+
+    @timing
+    def load(self):
+        processor_path = os.path.join(self.model_path, self.processor_name)
+        logger.info(f"Loading processor from {processor_path}")
+        self.processor = pickle.load(open(processor_path, "rb"))
 
     @timing
     def build(self, df: pd.DataFrame):
         df = df.copy()
-        df[HOUR] = df[F0].apply(lambda x: int(x.split(" ")[0].split('-')[0]))
-        df[DAY] = df[F0].apply(lambda x: int(x.split(" ")[0].split('-')[1]))
-        df[MONTH] = df[F0].apply(lambda x: int(x.split(" ")[0].split('-')[0]))
+        df[HOUR] = df[F0].apply(lambda x: int(x.split(" ")[1].split(":")[0]))
+        df[DAY] = df[F0].apply(lambda x: int(x.split(" ")[0].split("-")[1]))
+        df[MONTH] = df[F0].apply(lambda x: int(x.split(" ")[0].split("-")[0]))
 
         logger.info("Fitting processor on train set")
         train = df[df[SPLIT].isin([TRAIN])]
@@ -61,19 +72,9 @@ class Features(BaseEstimator, TransformerMixin):
     def fit_transform(self, df: pd.DataFrame):
         return self.fit(df).transform(df)
 
-    def save(self):
-        logger.info(f"Saving processor to {self.processor_path}")
-        pickle.dump(self.processor, open(self.processor_path, "wb"))
-        return self
-
-    @timing
-    def load(self):
-        logger.info(f"Loading processor from {self.processor_path}")
-        self.vectorizer = pickle.load(open(self.processor_path, "rb"))
-        return self
-
     def _featurize(self, df: pd.DataFrame, context: Optional[str] = None):
         if context == "build":
+            self.processor = processor_init(self.config)
             self.processor.fit(df)
             return self
 

@@ -13,7 +13,7 @@ F10 = "feature_10"
 TARGET = "duration"
 SPLIT = "split"
 HOUR = "hour"
-DAY = "data"
+DAY = "day"
 MONTH = "month"
 
 RAW_DIR = "raw"
@@ -25,3 +25,5 @@ TEST = 'test'
 
 DATA_CSV = "data.csv"
 SUBMISSION_CSV = "submission.csv"
+
+LOSS_CURVE = "loss-curve"

@@ -72,7 +72,6 @@ class DataClass():
         val_examples[SPLIT] = VAL
 
         df = pd.concat([train_examples, val_examples, test_examples], ignore_index=True).copy()
-        df.drop(columns=[ID], inplace=True)
         df.to_csv(self.data_file_path, index=False, mode="w+")
         logger.info(f"Saved CSV to {self.data_file_path}")
         logger.info("Ready for pre-processing")
@@ -83,9 +82,9 @@ class DataClass():
 
 
 class BasicDataset(TensorDataset):
-    def __init__(self, data, target):
-        self.x = data
-        self.y = target
+    def __init__(self, X: np.ndarray, Y: np.ndarray):
+        self.x = X
+        self.y = Y
         self.n_samples = self.x.shape[0]
 
     def __getitem__(self, idx):
