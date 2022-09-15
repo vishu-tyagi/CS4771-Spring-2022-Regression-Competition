@@ -17,29 +17,12 @@ def train(config: DNNConfig = DNNConfig) -> None:
 
     # Preprocess and build features
     features = Features(config)
-    df_features = features.build()
+    df_features = features.build(df)
     # Train model and generate submission file
     model = Model(config)
-    model.build()
+    model.build(df_features)
 
     # Save features
     features.save()
     # Save model
     model.save()
-
-
-# def server(config: DNNConfig = DNNConfig) -> Callable[[dict], dict]:
-#     # Load features
-#     features = Features(config)
-#     features.load()
-
-#     # Load model
-#     model = XGBoostModel(config)
-#     model.load()
-
-#     def predict(body: dict) -> dict:
-#         df = pd.DataFrame([body])
-#         df_features = features.transform(df)
-#         return model.return_response(df_features)
-
-#     return predict

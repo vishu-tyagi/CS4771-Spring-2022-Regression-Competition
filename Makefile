@@ -33,6 +33,6 @@ test: test-image
 train:
 	docker run -t \
 		-v ${LOCAL_DATA_DIR}:${DOCKER_DATA_DIR} \
-		-v ${LOCAL_MODEL_DIR}:${DOCKER_DATA_DIR} \
+		-v ${LOCAL_MODEL_DIR}:${DOCKER_MODEL_DIR} \
 		-v ${LOCAL_REPORTS_DIR}:${DOCKER_REPORTS_DIR} \
 		${IMG}:${IMG_TAG} train
