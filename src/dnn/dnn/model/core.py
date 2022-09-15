@@ -94,12 +94,12 @@ class Model():
         plt.plot(epochs, self.train_loss, label="Train Loss", color="orange")
         plt.plot(epochs, self.val_loss, label="Validation Loss", color="blue")
         best_epoch = np.argmin(self.val_loss) + 1
-        plt.axvline(x=best_epoch, label="Best Epoch", color="darkgreen")
+        plt.axvline(x=best_epoch, label="Best Epoch", color="darkgreen", linestyle="dashdot")
         plt.xlabel("Epoch")
         plt.ylabel("Loss (L1)")
         plt.title(f"Best Epoch: {best_epoch}")
         plt.legend(loc="upper right")
-        fig.savefig(os.path.join(self.reports_path, LOSS_CURVE))
+        plt.savefig(os.path.join(self.reports_path, LOSS_CURVE), bbox_inches="tight")
         plt.close()
 
     @timing
@@ -220,7 +220,7 @@ class Model():
                 train_batch_loss.append(loss.item())
                 message = \
                     f"EPOCH:{epoch+1}/{self.epochs}, " + \
-                    f"step:{i+1}/{self.num_train_samples//self.batch_size}, " + \
+                    f"step:{i+1}/{(self.num_train_samples//self.batch_size)+1}, " + \
                     f"loss={loss.item():.4f}"
                 print(message, end="\r", file=sys.stderr)
             # Take the average of iteration losses and append it
@@ -240,7 +240,7 @@ class Model():
                     val_batch_loss.append(loss.item())
                     message = \
                         f"EPOCH:{epoch+1}/{self.epochs}, " + \
-                        f"step:{i+1}/{self.num_train_samples//self.batch_size}, " + \
+                        f"step:{i+1}/{(self.num_train_samples//self.batch_size)+1}, " + \
                         f"loss={loss.item():.4f}"
                     print(message, end="\r", file=sys.stderr)
             # Take the average of iteration losses and append it
