@@ -20,6 +20,10 @@ The neural network minimizes L1 loss and uses Adam optimizer.
 
 The training phase includes validating the model to find the best epoch based on validation loss.
 
+<p align="center">
+  <img src="/reports/loss-curve.png" width="400" height="300" title="Standings">
+</p>
+
 ### Build the test container and run tests
 ```
 make test
