@@ -35,5 +35,3 @@ class MLPModel(nn.Module):
             x = self.dropout(x)
         out = self.layers[-1](x)
         return out
-
-

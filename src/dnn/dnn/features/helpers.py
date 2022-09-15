@@ -4,6 +4,7 @@ from sklearn.preprocessing import StandardScaler, OneHotEncoder
 
 from dnn.config import DNNConfig
 
+
 def processor_init(config: DNNConfig):
     numeric_features = config.NUMERIC_FEATURES
     numeric_transformer = Pipeline(steps=[(config.NUMERIC_SCALAR, StandardScaler())])

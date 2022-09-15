@@ -10,7 +10,6 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-sns.set_theme(style="darkgrid")
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
@@ -24,6 +23,7 @@ from dnn.utils.constants import (
     ID, TARGET, SPLIT, TRAIN, VAL, TEST
 )
 
+sns.set_theme(style="darkgrid")
 logger = logging.getLogger(__name__)
 
 
@@ -90,7 +90,7 @@ class Model():
 
     def _plot_loss_curve(self):
         fig = plt.figure(figsize=(8, 6))
-        epochs = [i+1 for i in range(self.epochs)]
+        epochs = [(i + 1) for i in range(self.epochs)]
         plt.plot(epochs, self.train_loss, label="Train Loss", color="orange")
         plt.plot(epochs, self.val_loss, label="Validation Loss", color="blue")
         best_epoch = np.argmin(self.val_loss) + 1
@@ -146,7 +146,7 @@ class Model():
 
         logger.info("Generating submission for kaggle competition")
         submission = pd.DataFrame({
-            ID:[i for i in range(pred.shape[0])],
+            ID: [i for i in range(pred.shape[0])],
             TARGET: pred
         })
         submission_path = os.path.join(self.reports_path, SUBMISSION_CSV)
@@ -218,10 +218,11 @@ class Model():
                 # Update weights
                 self.optimizer.step()
                 train_batch_loss.append(loss.item())
-                print(
-                    f"EPOCH:{epoch+1}/{self.epochs}, step:{i+1}/{self.num_train_samples//self.batch_size}, loss={loss.item():.4f}", end="\r",
-                    file=sys.stderr
-                )
+                message = \
+                    f"EPOCH:{epoch+1}/{self.epochs}, " + \
+                    f"step:{i+1}/{self.num_train_samples//self.batch_size}, " + \
+                    f"loss={loss.item():.4f}"
+                print(message, end="\r", file=sys.stderr)
             # Take the average of iteration losses and append it
             # to the epoch losses list
             train_loss.append(np.array(train_batch_loss).mean())
@@ -237,17 +238,19 @@ class Model():
                     # Calculate loss
                     loss = self.criterion(outputs, y)
                     val_batch_loss.append(loss.item())
-                    print(
-                        f"EPOCH:{epoch+1}/{self.epochs}, step:{i+1}/{self.num_train_samples//self.batch_size}, loss={loss.item():.4f}", end="\r",
-                        file=sys.stderr
-                    )
+                    message = \
+                        f"EPOCH:{epoch+1}/{self.epochs}, " + \
+                        f"step:{i+1}/{self.num_train_samples//self.batch_size}, " + \
+                        f"loss={loss.item():.4f}"
+                    print(message, end="\r", file=sys.stderr)
             # Take the average of iteration losses and append it
             # to the epoch losses list
             val_loss.append(np.array(val_batch_loss).mean())
-            print(
-                f"EPOCH:{epoch+1}/{self.epochs} - Training Loss: {train_loss[-1]:.4f}, Validation Loss: {val_loss[-1]:.4f}",
-                file=sys.stderr
-            )
+            message = \
+                f"EPOCH:{epoch+1}/{self.epochs} - " + \
+                f"Training Loss: {train_loss[-1]:.4f}, " + \
+                f"Validation Loss: {val_loss[-1]:.4f}"
+            print(message, file=sys.stderr)
             # Save model
             state = f"epoch_{epoch+1:03}.pth"
             state_dict_path = os.path.join(self.trained_models_path, state)

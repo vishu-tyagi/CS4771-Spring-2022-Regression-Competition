@@ -6,9 +6,6 @@ from dnn.data_access import DataClass
 from dnn.features import Features
 from dnn.model import Model
 
-import pandas as pd
-from sentiment_analysis.utils import timing, load_csv
-
 logger = logging.getLogger(__name__)
 
 

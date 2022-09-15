@@ -20,10 +20,10 @@ def timing(f):
         seconds_taken = time_taken % 60
 
         if hours_taken:
-            message = f"func:{f.__name__} took: {hours_taken:0.0f} hr and" + \
+            message = f"func:{f.__name__} took: {hours_taken:0.0f} hr and " + \
                 f"{minutes_taken:0.0f} min"
         elif minutes_taken:
-            message = f"func:{f.__name__} took: {minutes_taken:0.0f} min and" + \
+            message = f"func:{f.__name__} took: {minutes_taken:0.0f} min and " + \
                 f"{seconds_taken:0.2f} sec"
         else:
             message = f"func:{f.__name__} took: {seconds_taken:0.2f} sec"
