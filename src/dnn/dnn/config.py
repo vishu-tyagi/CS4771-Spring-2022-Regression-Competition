@@ -55,5 +55,5 @@ class DNNConfig():
     # Train
     TRAIN_BATCH_SIZE = 764
     TRAIN_LEARNING_RATE = 0.001
-    TRAIN_EPOCHS = 100
+    TRAIN_EPOCHS = 50
     TRAIN_NUM_WORKERS = 2

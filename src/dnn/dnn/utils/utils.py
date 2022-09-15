@@ -20,12 +20,15 @@ def timing(f):
         seconds_taken = time_taken % 60
 
         if hours_taken:
-            logger.info(f"func:{f.__name__} took: {hours_taken:0.0f} hr and \
-                {minutes_taken:0.0f} min")
+            message = f"func:{f.__name__} took: {hours_taken:0.0f} hr and" + \
+                f"{minutes_taken:0.0f} min"
         elif minutes_taken:
-            logger.info(f"func:{f.__name__} took: {minutes_taken:0.0f} min and \
-                {seconds_taken:0.2f} sec")
+            message = f"func:{f.__name__} took: {minutes_taken:0.0f} min and" + \
+                f"{seconds_taken:0.2f} sec"
         else:
-            logger.info(f"func:{f.__name__} took: {seconds_taken:0.2f} sec")
+            message = f"func:{f.__name__} took: {seconds_taken:0.2f} sec"
+        logger.info(message)
+
         return result
+
     return wrap
