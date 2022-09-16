@@ -18,9 +18,8 @@ from dnn.config import DNNConfig
 from dnn.data_access import BasicDataset
 from dnn.model.mlp import MLPModel
 from dnn.utils import timing
-from dnn.utils.constants import (TRAINED_DIR, SUBMISSION_CSV, LOSS_CURVE)
 from dnn.utils.constants import (
-    ID, TARGET, SPLIT, TRAIN, VAL, TEST
+    ID, TARGET, SPLIT, TRAIN, VAL, TEST, TRAINED_DIR, SUBMISSION_CSV, LOSS_CURVE
 )
 
 sns.set_theme(style="darkgrid")
