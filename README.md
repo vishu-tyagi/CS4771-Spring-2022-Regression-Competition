@@ -51,6 +51,11 @@ cd CS4771-Spring-2022-Regression-Competition
 conda env create -f environment.yml
 ```
 
+### Activate environment
+```
+conda activate dnn
+```
+
 ### Install package
 ```
 pip install -e src/dnn
