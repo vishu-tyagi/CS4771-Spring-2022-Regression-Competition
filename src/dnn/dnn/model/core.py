@@ -40,10 +40,10 @@ class Model():
         self.params_name = config.MODEL_PARAMETERS_NAME
 
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.batch_size = None
-        self.learning_rate = None
-        self.epochs = None
-        self.num_workers = None
+        self.batch_size = self.config.TRAIN_BATCH_SIZE
+        self.learning_rate = self.config.TRAIN_LEARNING_RATE
+        self.epochs = self.config.TRAIN_EPOCHS
+        self.num_workers = self.config.TRAIN_NUM_WORKERS
 
         self.criterion = None
         self.optimizer = None
@@ -55,13 +55,6 @@ class Model():
         self.train_loss = None
         self.val_loss = None
         self.best_epoch = None
-
-    def _train_init(self):
-        self.batch_size = self.config.TRAIN_BATCH_SIZE
-        self.learning_rate = self.config.TRAIN_LEARNING_RATE
-        self.epochs = self.config.TRAIN_EPOCHS
-        self.num_workers = self.config.TRAIN_NUM_WORKERS
-        return self
 
     def _make_data_loader(
         self,
@@ -136,7 +129,6 @@ class Model():
 
         logger.info("Training model")
         self.train(X_train, Y_train, X_val, Y_val)
-        # return
 
         logger.info(f"Predicting on test set")
         X = df[df[SPLIT].isin([TEST])]
@@ -168,9 +160,6 @@ class Model():
         self.params["features"] = X_train.columns.tolist()
 
         self._model = MLPModel(**self.params)
-        # self._model = MLPModel("mlp", X_train.shape[1], 1)
-        # return
-        self._train_init()
         self.criterion = nn.L1Loss(reduction="mean")
         self.optimizer = torch.optim.Adam(self._model.parameters(), lr=self.learning_rate)
 
