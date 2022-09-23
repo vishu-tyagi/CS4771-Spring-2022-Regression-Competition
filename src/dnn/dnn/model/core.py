@@ -185,11 +185,10 @@ class Model():
         # Two lists to keep the losses at the end of each epoch
         train_loss, val_loss = list(), list()
         for epoch in range(self.epochs):
-            self._model.train()
             # Dummy lists to keep the losses at the end of each iteration
             # (one batch forward and backward process)
             train_batch_loss, val_batch_loss = list(), list()
-            # Train model
+            # Training mode
             self._model.train()
             for i, (x, y) in enumerate(train_loader):
                 # Move input to device
