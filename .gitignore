@@ -8,3 +8,4 @@ data/raw/*.csv
 /reports/*.csv
 /model/
 out/
+.dockerignore
