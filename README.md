@@ -24,22 +24,8 @@ The training phase includes validating the model to find the best epoch based on
   <img src="/reports/loss-curve.png" width="400" height="300" title="Standings">
 </p>
 
-### Build the test container and run tests
-```
-make test
-```
 
-### Build the container
-```
-make build
-```
-
-### Train the model
-```
-make train
-```
-
-## Setup to run jupyter notebooks
+## Setup Instructions
 
 ### Move into top-level directory
 ```
@@ -62,15 +48,9 @@ pip install -e src/dnn
 ```
 Including the optional -e flag will install package in "editable" mode, meaning that instead of copying the files into your virtual environment, a symlink will be created to the files where they are.
 
+### Run jupyter server
+```
+jupyter notebook notebooks/
+```
+
 You can now use the jupyter kernel `dnn` to run notebooks.
-
-## Develop locally
-
-### Activate environment
-```
-conda activate dnn
-```
-
-### Train the model
-```
-python -m dnn train
